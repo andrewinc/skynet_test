@@ -1,0 +1,16 @@
+AddDefaultCharset utf-8
+
+
+Options All -Indexes
+DirectoryIndex index.php
+
+RedirectMatch 404 /\.git
+ErrorDocument 404 /index.php
+
+Order Allow,Deny
+Allow from all
+
+RewriteEngine On
+
+RewriteCond %{REQUEST_METHOD} PUT
+RewriteRule ^.*$ index.php [L]
