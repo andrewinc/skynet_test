@@ -82,6 +82,19 @@ $routing =array(
                 $mysqli->close();
             }
         },
+        '/^\/$/' =>function($all){
+            http_response_code(200);
+            header('Content-type: text/html; Charset=utf8');
+            $port=null;
+            $root = isset($_SERVER['SERVER_PORT'])?( (443==($port=$_SERVER['SERVER_PORT']))?'https':'http'):'http';
+            $root.= "://";
+            $root.= isset($_SERVER['SERVER_NAME'])?$_SERVER['SERVER_NAME']:$_SERVER['SERVER_ADDR'];//'127.0.0.1'
+            if (!is_null($port) && !in_array($port, array(80,443))) {
+                $root.=":{$port}";
+            }
+            echo str_replace("%root%", $root, file_get_contents("page.index.php"));
+            exit();
+        }        
     ),
 
     'PUT' => array(
@@ -131,37 +144,4 @@ if (isset($routing[$_SERVER['REQUEST_METHOD']]) && is_array($uriHandlers = $rout
 // Вывод результатов
 header('Content-type: application/json; Charset=utf8');
 
-/**
- * Преобразует escape-последовательности соответствующие русским символам в обычные символы.
- * Может понадобиться для более наглядного вывода результатов функции json_encode
- * @see http://javascript.ru/forum/295090-post12.html
- * ```
- * ruString('\u0417\u0435\u043c\u043b\u044f'); // 'Земля'
- * ruString('{"tarif":"\u0412\u043e\u0434\u0430"}'); // '{"tarif":"Вода"}'
- * ```
- * @param string $str Строка, содержащая escape-последовательности.
- * @return string
- */
-function ruString($str){
-    //новая реализация http://javascript.ru/forum/295090-post12.html
-    $arr_replace_utf = array('\u0410', '\u0430','\u0411','\u0431','\u0412','\u0432',            //0
-            '\u0413','\u0433','\u0414','\u0434','\u0415','\u0435','\u0401','\u0451','\u0416',   //1
-            '\u0436','\u0417','\u0437','\u0418','\u0438','\u0419','\u0439','\u041a','\u043a',   //2
-            '\u041b','\u043b','\u041c','\u043c','\u041d','\u043d','\u041e','\u043e','\u041f',   //3
-            '\u043f','\u0420','\u0440','\u0421','\u0441','\u0422','\u0442','\u0423','\u0443',   //4
-            '\u0424','\u0444','\u0425','\u0445','\u0426','\u0446','\u0427','\u0447','\u0428',   //5
-            '\u0448','\u0429','\u0449','\u042a','\u044a','\u042b','\u044b','\u042c','\u044c',   //6
-            '\u042d','\u044d','\u042e','\u044e','\u042f','\u044f');                             //7
-    $arr_replace_cyr = array('А', 'а', 'Б', 'б', 'В', 'в',          //0
-                   'Г', 'г', 'Д', 'д', 'Е', 'е', 'Ё', 'ё', 'Ж',     //1
-                   'ж', 'З', 'з', 'И', 'и', 'Й', 'й', 'К', 'к',     //2
-                   'Л', 'л', 'М', 'м', 'Н', 'н', 'О', 'о', 'П',     //3
-                   'п', 'Р', 'р', 'С', 'с', 'Т', 'т', 'У', 'у',     //4
-                   'Ф', 'ф', 'Х', 'х', 'Ц', 'ц', 'Ч', 'ч', 'Ш',     //5
-                   'ш', 'Щ', 'щ', 'Ъ', 'ъ', 'Ы', 'ы', 'Ь', 'ь',     //6
-                   'Э', 'э', 'Ю', 'ю', 'Я', 'я');                   //7
-    return str_replace($arr_replace_utf,$arr_replace_cyr,$str);
-}
-
-echo ruString(json_encode($result));
-echo "\n";
+echo json_encode($result, JSON_UNESCAPED_UNICODE);
